@@ -1,7 +1,8 @@
 const querystring = require('querystring');
 const fs = require('fs');
+const formidable = require('formidable');
 
-function start(response, postData) {
+function start(response) {
     console.log('Request handler start was called');
 
     const body = '<html>'+
@@ -21,18 +22,30 @@ function start(response, postData) {
     response.end();
 }
 
-function upload(response, postData) {
-    const body = querystring.parse(postData).text;
+function upload(response, request) {
     console.log('Request handler upload was called');
-    response.writeHead(200, {'Content-Type': 'text/plain'});
-    response.write(`You've sent the text: ${body}`);
-    response.end();
+
+    const from = new formidable.IncomingForm();
+    from.parse(request, (error, fields, files) => {
+        console.log('parsing done');
+
+        fs.rename(files.upload.path, '/tmp/test.png', error => {
+            if (error) {
+                fs.unlink('/tmp/test.png');
+                fs.rename(files.upload.path, 'tmp/test.png');
+            }
+        });
+        response.writeHead(200, {'Content-Type': 'text/html'});
+        response.write('received image:<br/>');
+        response.write(`<img src='/show' />`);
+        response.end();
+    });
 }
 
 function show(response) {
     console.log('Request handler show was callled');
-    response.writeHead(200, {'Content-Type': 'image/jpg'});
-    fs.createReadStream('/tmp/test.jpg').pipe(response);
+    response.writeHead(200, {'Content-Type': 'image/png'});
+    fs.createReadStream('/tmp/test.png').pipe(response);
 }
 
 
