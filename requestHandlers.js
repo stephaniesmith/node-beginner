@@ -1,15 +1,7 @@
-const exec = require('child_process').exec;
+const querystring = require('querystring')
 
-function start(response) {
+function start(response, postData) {
     console.log('Request handler start was called');
-
-    // exec('find /',
-    //     { timeout: 10000, maxBuffer: 20000*1024 },
-    //     (error, stdout, stderr) => {
-    //         response.writeHead(200, {'Content-Type': 'text/plain'});
-    //         response.write(stdout);
-    //         response.end();
-    //     });
 
     const body = '<html>'+
         '<head>'+
@@ -28,10 +20,11 @@ function start(response) {
     response.end();
 }
 
-function upload(response) {
+function upload(response, postData) {
+    const body = querystring.parse(postData).text;
     console.log('Request handler upload was called');
     response.writeHead(200, {'Content-Type': 'text/plain'});
-    response.write('Hello Updload');
+    response.write(`You've sent: ${body}`);
     response.end();
 }
 
