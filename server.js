@@ -3,13 +3,20 @@ const url = require('url');
 
 function start(route, handle) {
     function onRequest(request, response) {
+        let postData = '';
         const pathname = url.parse(request.url).pathname;
         console.log(`Request for ${pathname} received`);
 
-        // response.writeHead(200, {'Content-Type': 'text/plain'});
-        route(handle, pathname, response);
-        // response.write(content);
-        // response.end();
+        request.setEncoding('utf*');
+
+        request.addListener('data', postDataChunk => {
+            postData += postDataChunk;
+            console.log(`Received POST data chunk '${postDataChunk}'`);
+        });
+
+        request.addListener('end', () => {
+            route(handle, pathname, response, postData); 
+        });
     }
 
     http.createServer(onRequest).listen(8888);
